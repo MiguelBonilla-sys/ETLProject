@@ -1,69 +1,309 @@
-# ETLProject
+# 🏎️ ETL Project - Procesamiento de Datos F1 Qualifying
 
-## Descripción
-Este proyecto implementa un pipeline ETL (Extract, Transform, Load) para procesar y limpiar datos de viajes de Uber, utilizando el dataset disponible en Kaggle: [Uber Ride Analytics Dashboard](https://www.kaggle.com/datasets/yashdevladdha/uber-ride-analytics-dashboard).
+## 📋 Descripción del Proyecto
 
-El objetivo es extraer los datos crudos, transformarlos mediante limpieza y normalización, y cargarlos en un archivo listo para análisis.
+Este proyecto implementa un pipeline ETL (Extract, Transform, Load) completo para procesar datos de qualifying de Fórmula 1. El sistema extrae datos de archivos CSV, los transforma y limpia (incluyendo la generación automática de códigos de pilotos), y los carga en diferentes formatos de salida.
 
-## Estructura del Proyecto
+### 🎯 Características Principales
+
+- **Extracción** de datos desde archivos CSV
+- **Transformación** y limpieza de datos con generación automática de códigos
+- **Carga** a múltiples destinos (CSV y SQLite)
+- **Interfaz de línea de comandos** intuitiva
+- **Logging** detallado del proceso
+- **Manejo robusto de errores**
+
+## 🏗️ Arquitectura del Proyecto
 
 ```
 ETLProject/
-├── Extract/
-│   └── extractor.py
-├── Transform/
-│   └── transformer.py
-├── Load/
-│   └── loader.py
+├── main.py                    # Punto de entrada principal
 ├── Config/
-│   └── config.py
+│   └── config.py             # Configuraciones del proyecto
+├── Extract/
+│   ├── extractor.py          # Módulo de extracción
+│   └── Files/
+│       └── qualifying_results.csv  # Datos fuente
+├── Transform/
+│   └── transformer.py        # Módulo de transformación
+├── Load/
+│   └── loader.py             # Módulo de carga
+├── Output/                   # Directorio de archivos generados
+├── test_qualifying_transformer.py  # Script de pruebas
+├── README.md                 # Documentación del proyecto
+└── LICENSE                   # Licencia del proyecto
 ```
 
-## Uso del DataFrame
-El archivo principal de datos es `ncr_ride_bookings.csv`, que contiene información sobre reservas de viajes, cancelaciones, valoraciones, métodos de pago y más.
+## 🚀 Instalación y Configuración
 
-### Columnas principales:
-- Date: Fecha de la reserva
-- Time: Hora de la reserva
-- Booking ID: Identificador único de la reserva
-- Booking Status: Estado de la reserva (Completada, Cancelada, etc.)
-- Customer ID: Identificador del cliente
-- Vehicle Type: Tipo de vehículo
-- Pickup Location: Origen
-- Drop Location: Destino
-- Avg VTAT: Tiempo promedio de llegada del vehículo
-- Avg CTAT: Tiempo promedio de llegada del cliente
-- Cancelled Rides by Customer: Cancelación por cliente
-- Reason for cancelling by Customer: Motivo de cancelación por cliente
-- Cancelled Rides by Driver: Cancelación por conductor
-- Driver Cancellation Reason: Motivo de cancelación por conductor
-- Incomplete Rides: Viaje incompleto
-- Incomplete Rides Reason: Motivo de viaje incompleto
-- Booking Value: Monto total del viaje
-- Ride Distance: Distancia recorrida (km)
-- Driver Ratings: Calificación al conductor
-- Customer Rating: Calificación del cliente
-- Payment Method: Método de pago
+### Prerrequisitos
 
-## Ejecución del pipeline ETL
-1. Ajusta las rutas de entrada y salida en `Config/config.py` si es necesario.
-2. Ejecuta el flujo ETL desde un script principal:
+- Python 3.7 o superior
+- pandas
+- sqlite3 (incluido en Python)
+
+### Instalación
+
+1. **Clonar el repositorio:**
+   ```bash
+   git clone https://github.com/MiguelBonilla-sys/ETLProject.git
+   cd ETLProject
+   ```
+
+2. **Crear entorno virtual (recomendado):**
+   ```bash
+   python -m venv .venv
+   .venv\Scripts\activate  # Windows
+   # source .venv/bin/activate  # Linux/Mac
+   ```
+
+3. **Instalar dependencias:**
+   ```bash
+   pip install pandas
+   ```
+
+## 🔧 Uso del Sistema
+
+### Ejecución Principal
+
+```bash
+# Ejecutar el pipeline ETL completo
+python main.py
+```
+
+### Comandos Adicionales
+
+```bash
+# Ver muestra de datos procesados
+python main.py show
+
+# Mostrar ayuda
+python main.py help
+
+# Ejecutar pruebas del transformador
+python test_qualifying_transformer.py
+```
+
+## 📊 Descripción de los Módulos
+
+### 1. 📥 Extract (Extracción)
+
+**Archivo:** `Extract/extractor.py`
+
+**Funcionalidad:**
+- Extrae datos desde archivos CSV
+- Manejo de errores de lectura
+- Soporte para diferentes rutas de archivo
+
+**Métodos principales:**
+- `extract()`: Extrae datos del archivo configurado
+- `extract_csv(file_path)`: Extrae datos de un archivo específico
+
+### 2. 🔄 Transform (Transformación)
+
+**Archivo:** `Transform/transformer.py`
+
+**Funcionalidad:**
+- Limpieza y transformación de datos
+- Generación automática de códigos de pilotos
+- Conversión de tipos de datos
+- Manejo de valores nulos
+
+**Métodos principales:**
+- `clean()`: Limpieza general de datos
+- `clean_qualifying_data()`: Limpieza específica para datos de qualifying
+
+**Transformaciones de qualifying:**
+- ✅ Genera campo `Code` con las primeras 3 letras del `FamilyName`
+- ✅ Limpia espacios en blanco en columnas de texto
+- ✅ Convierte columnas numéricas apropiadamente
+- ✅ Procesa fechas de nacimiento
+- ✅ Mantiene formato de tiempos de qualifying
+
+### 3. 💾 Load (Carga)
+
+**Archivo:** `Load/loader.py`
+
+**Funcionalidad:**
+- Carga datos a archivos CSV
+- Carga datos a base de datos SQLite
+- Creación automática de directorios
+- Manejo de errores con fallback
+
+**Métodos principales:**
+- `to_csv(output_path)`: Guarda en formato CSV
+- `to_sqlite(db_path, table_name)`: Guarda en SQLite
+
+### 4. ⚙️ Config (Configuración)
+
+**Archivo:** `Config/config.py`
+
+**Parámetros configurables:**
+- `INPUT_PATH`: Ruta del archivo de datos fuente
+- `SQLITE_DB_PATH`: Ruta de la base de datos SQLite
+- `SQLITE_TABLE`: Nombre de la tabla en SQLite
+
+## 📈 Datos de Entrada
+
+### Formato del CSV de Qualifying
+
+El archivo `qualifying_results.csv` contiene las siguientes columnas:
+
+| Columna | Descripción | Tipo |
+|---------|-------------|------|
+| Season | Temporada | int |
+| Round | Ronda del campeonato | int |
+| CircuitID | Identificador del circuito | string |
+| Position | Posición en qualifying | int |
+| DriverID | Identificador del piloto | string |
+| Code | Código del piloto (se genera automáticamente) | string |
+| PermanentNumber | Número permanente del piloto | int |
+| GivenName | Nombre del piloto | string |
+| FamilyName | Apellido del piloto | string |
+| DateOfBirth | Fecha de nacimiento | date |
+| Nationality | Nacionalidad | string |
+| ConstructorID | Identificador del constructor | string |
+| ConstructorName | Nombre del constructor | string |
+| ConstructorNationality | Nacionalidad del constructor | string |
+| Q1, Q2, Q3 | Tiempos de qualifying | string |
+
+## 📊 Datos de Salida
+
+### 1. Archivo CSV Limpio
+- **Ubicación:** `Output/qualifying_results_clean_YYYYMMDD_HHMMSS.csv`
+- **Formato:** CSV con timestamp
+- **Contenido:** Datos limpios y transformados
+
+### 2. Base de Datos SQLite
+- **Ubicación:** `Extract/Files/f1_data.db`
+- **Tabla:** `qualifying_results`
+- **Contenido:** Datos limpios en formato relacional
+
+## 🔍 Ejemplos de Transformación
+
+### Generación de Códigos de Pilotos
 
 ```python
-from Config.config import Config
-from Extract.extractor import Extractor
-from Transform.transformer import Transformer
-from Load.loader import Loader
-
-extractor = Extractor(Config.INPUT_PATH)
-df = extractor.extract()
-transformer = Transformer(df)
-df_clean = transformer.clean()
-loader = Loader(df_clean)
-loader.to_csv(Config.OUTPUT_PATH)
+# Ejemplos de códigos generados automáticamente:
+Häkkinen    → HÄK
+Coulthard   → COU
+Schumacher  → SCH
+Barrichello → BAR
+Frentzen    → FRE
 ```
 
-Esto generará un archivo limpio listo para análisis o visualización.
+### Estadísticas de Ejemplo
 
-## Fuente de datos
-Dataset original: [Uber Ride Analytics Dashboard - Kaggle](https://www.kaggle.com/datasets/yashdevladdha/uber-ride-analytics-dashboard)
+```
+📈 Estadísticas finales:
+   • Registros procesados: 8,918
+   • Pilotos únicos: 122
+   • Constructores únicos: 38
+   • Temporadas: 2000 - 2024
+   • Códigos generados: 109
+```
+
+## 🧪 Testing
+
+### Ejecutar Pruebas
+
+```bash
+python test_qualifying_transformer.py
+```
+
+### Resultados Esperados
+
+```
+✅ Datos extraídos: 8918 registros
+✅ Datos transformados exitosamente
+✅ Códigos únicos generados: 109
+✅ Códigos vacíos: 0
+✅ Prueba completada exitosamente!
+```
+
+## 🛠️ Desarrollo y Mantenimiento
+
+### Estructura de Clases
+
+```python
+# Extractor
+class Extractor:
+    def __init__(self, file_path=None)
+    def extract()
+    def extract_csv(file_path)
+
+# Transformer
+class Transformer:
+    def __init__(self, df)
+    def clean()
+    def clean_qualifying_data()
+
+# Loader
+class Loader:
+    def __init__(self, df)
+    def to_csv(output_path)
+    def to_sqlite(db_path, table_name)
+```
+
+### Agregar Nuevas Transformaciones
+
+1. Agregar método en `Transformer` class
+2. Actualizar `main.py` para usar el nuevo método
+3. Agregar pruebas correspondientes
+
+### Agregar Nuevos Destinos de Carga
+
+1. Agregar método en `Loader` class
+2. Actualizar configuración si es necesario
+3. Actualizar `main.py` para incluir el nuevo destino
+
+## 🚨 Manejo de Errores
+
+### Errores Comunes y Soluciones
+
+| Error | Causa | Solución |
+|-------|-------|----------|
+| `FileNotFoundError` | Archivo CSV no encontrado | Verificar ruta en `config.py` |
+| `PermissionError` | Sin permisos de escritura | Verificar permisos del directorio |
+| `sqlite3.OperationalError` | Error de base de datos | Verificar espacio en disco |
+| `pandas.errors.EmptyDataError` | Archivo CSV vacío | Verificar contenido del archivo |
+
+### Logs y Debugging
+
+El sistema proporciona logging detallado:
+- ✅ Mensajes de éxito
+- ❌ Mensajes de error
+- ℹ️ Información general
+- 📊 Estadísticas de procesamiento
+
+## 📄 Licencia
+
+Este proyecto está licenciado bajo la MIT License. Ver el archivo `LICENSE` para más detalles.
+
+## 👤 Autor
+
+**Miguel Bonilla**
+- GitHub: [@MiguelBonilla-sys](https://github.com/MiguelBonilla-sys)
+- Proyecto: [ETLProject](https://github.com/MiguelBonilla-sys/ETLProject)
+
+## 🤝 Contribuciones
+
+Las contribuciones son bienvenidas. Por favor:
+
+1. Fork el proyecto
+2. Crear una rama para la nueva característica (`git checkout -b feature/nueva-caracteristica`)
+3. Commit los cambios (`git commit -am 'Agregar nueva característica'`)
+4. Push a la rama (`git push origin feature/nueva-caracteristica`)
+5. Crear un Pull Request
+
+## 📞 Soporte
+
+Si encuentras algún problema o tienes preguntas:
+
+1. Revisa la documentación
+2. Verifica los logs de error
+3. Crea un issue en GitHub con detalles del problema
+
+---
+
+*Proyecto desarrollado como parte del aprendizaje de pipelines ETL y procesamiento de datos de Fórmula 1.*

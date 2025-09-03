@@ -35,3 +35,43 @@ class Transformer:
                 df[col] = df[col].astype(bool)
         self.df = df
         return self.df
+
+    def clean_qualifying_data(self):
+        """
+        Realiza limpieza específica para los datos de qualifying.
+        Genera el campo 'Code' con las primeras 3 letras del 'FamilyName'.
+        """
+        import pandas as pd
+        df = self.df.copy()
+        
+        # Verificar si existe la columna FamilyName
+        if 'FamilyName' in df.columns:
+            # Generar el código con las primeras 3 letras del apellido en mayúsculas
+            df['Code'] = df['FamilyName'].apply(lambda x: str(x)[:3].upper() if pd.notna(x) and str(x).strip() != '' else '')
+            
+            # Limpiar espacios en blanco en columnas de texto
+            text_columns = ['FamilyName', 'GivenName', 'Nationality', 'ConstructorName', 'ConstructorNationality']
+            for col in text_columns:
+                if col in df.columns:
+                    df[col] = df[col].astype(str).str.strip()
+            
+            # Convertir columnas de tiempo a formato numérico si es necesario
+            time_columns = ['Q1', 'Q2', 'Q3']
+            for col in time_columns:
+                if col in df.columns:
+                    # Mantener como string si ya está en formato de tiempo (mm:ss.sss)
+                    # Si son ceros, mantenerlos como están
+                    df[col] = df[col].astype(str)
+            
+            # Convertir columnas numéricas
+            numeric_columns = ['Season', 'Round', 'Position', 'PermanentNumber']
+            for col in numeric_columns:
+                if col in df.columns:
+                    df[col] = pd.to_numeric(df[col], errors='coerce')
+            
+            # Limpiar y convertir fecha de nacimiento
+            if 'DateOfBirth' in df.columns:
+                df['DateOfBirth'] = pd.to_datetime(df['DateOfBirth'], errors='coerce')
+        
+        self.df = df
+        return self.df

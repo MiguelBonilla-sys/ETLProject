@@ -2,6 +2,6 @@ class Config:
     """
     Clase de configuración para rutas y parámetros del ETL.
     """
-    INPUT_PATH = '/workspaces/ETLProject/Extract/Files/ncr_ride_bookings.csv'
-    SQLITE_DB_PATH = '/workspaces/ETLProject/Extract/Files/etl_data.db'
-    SQLITE_TABLE = 'ride_bookings_clean'
+    INPUT_PATH = r'Extract\Files\qualifying_results.csv'
+    SQLITE_DB_PATH = r'Extract\Files\f1_data.db'
+    SQLITE_TABLE = 'qualifying_results'
